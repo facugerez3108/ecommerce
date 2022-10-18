@@ -1,23 +1,12 @@
 import Layout from '../../hocs/Layout'
-import { Fragment, useState } from 'react'
+import { Fragment, useState, useEffect } from 'react'
 import { Dialog, Disclosure, Menu, Transition } from '@headlessui/react'
 import { XIcon } from '@heroicons/react/outline'
 import { ChevronDownIcon, FilterIcon, MinusSmIcon, PlusSmIcon, ViewGridIcon } from '@heroicons/react/solid'
 
-const sortOptions = [
-    { name: 'Most Popular', href: '#', current: true },
-    { name: 'Best Rating', href: '#', current: false },
-    { name: 'Newest', href: '#', current: false },
-    { name: 'Price: Low to High', href: '#', current: false },
-    { name: 'Price: High to Low', href: '#', current: false },
-  ]
-  const subCategories = [
-    { name: 'Totes', href: '#' },
-    { name: 'Backpacks', href: '#' },
-    { name: 'Travel Bags', href: '#' },
-    { name: 'Hip Bags', href: '#' },
-    { name: 'Laptop Sleeves', href: '#' },
-  ]
+import {connect} from 'react-redux'
+import {get_categories} from '../../redux/actions/categories'
+
   const filters = [
     {
       id: 'color',
@@ -56,12 +45,16 @@ const sortOptions = [
     },
   ]
   
-  function classNames(...classes) {
-    return classes.filter(Boolean).join(' ')
-  }
 
-const Store = () => {
+  const Store = ({
+  get_categories,
+  categories
+  }) => {
     const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
+    
+    useEffect (() => {
+      get_categories()
+    }, [])
 
     return (
     <Layout>
@@ -104,17 +97,45 @@ const Store = () => {
                   </button>
                 </div>
 
-                {/* Filters */}
+                {/* Mobile Filters */}
                 <form className="mt-4 border-t border-gray-200">
                   <h3 className="sr-only">Categories</h3>
                   <ul role="list" className="font-medium text-gray-900 px-2 py-3">
-                    {subCategories.map((category) => (
-                      <li key={category.name}>
-                        <a href={category.href} className="block px-2 py-3">
-                          {category.name}
-                        </a>
-                      </li>
-                    ))}
+                    { categories &&
+                      categories !== null &&
+                      categories !== undefined &&
+                      categories.map(category => {
+                        if (category.sub_categories.length === 0){
+                          return (
+                            <div key={category.id} className="flex items-center h-5 my-5">
+                              <input type="radio" name='category_id' className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded-full">
+                              </input>
+                              <label className="ml-3 min-w-0 flex-1 text-gray-500">{category.name}</label>
+                            </div>
+                          )
+                        }else{
+                          let result = []
+                          result.push(
+                            <div key={category.id} className="flex items-center h-5">
+                              <input type="radio" name='category_id' className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded-full">
+                              </input>
+                              <label className="ml-3 min-w-0 flex-1 text-gray-500">{category.name}</label>
+                            </div>
+                          )
+
+                          category.sub_categories.map(sub_category => {
+                            result.push(
+                              <div key={sub_category.id} className="ml-5 flex items-center h-5 ml-2 my-5">
+                                <input type="radio" name='category_id' className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded-full">
+                                </input>
+                                <label className="ml-3 min-w-0 flex-1 text-gray-500">{sub_category.name}</label>
+                              </div>
+                            )
+                          })
+                          return result
+                        }
+                      })
+                    }
                   </ul>
 
                   {filters.map((section) => (
@@ -123,7 +144,7 @@ const Store = () => {
                         <>
                           <h3 className="-mx-2 -my-3 flow-root">
                             <Disclosure.Button className="px-2 py-3 bg-white w-full flex items-center justify-between text-gray-400 hover:text-gray-500">
-                              <span className="font-medium text-gray-900">{section.name}</span>
+                              <span className="font-medium text-gray-900"></span>
                               <span className="ml-6 flex items-center">
                                 {open ? (
                                   <MinusSmIcon className="h-5 w-5" aria-hidden="true" />
@@ -135,24 +156,7 @@ const Store = () => {
                           </h3>
                           <Disclosure.Panel className="pt-6">
                             <div className="space-y-6">
-                              {section.options.map((option, optionIdx) => (
-                                <div key={option.value} className="flex items-center">
-                                  <input
-                                    id={`filter-mobile-${section.id}-${optionIdx}`}
-                                    name={`${section.id}[]`}
-                                    defaultValue={option.value}
-                                    type="checkbox"
-                                    defaultChecked={option.checked}
-                                    className="h-4 w-4 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500"
-                                  />
-                                  <label
-                                    htmlFor={`filter-mobile-${section.id}-${optionIdx}`}
-                                    className="ml-3 min-w-0 flex-1 text-gray-500"
-                                  >
-                                    {option.label}
-                                  </label>
-                                </div>
-                              ))}
+                              
                             </div>
                           </Disclosure.Panel>
                         </>
@@ -192,22 +196,7 @@ const Store = () => {
                 >
                   <Menu.Items className="origin-top-right absolute right-0 mt-2 w-40 rounded-md shadow-2xl bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
                     <div className="py-1">
-                      {sortOptions.map((option) => (
-                        <Menu.Item key={option.name}>
-                          {({ active }) => (
-                            <a
-                              href={option.href}
-                              className={classNames(
-                                option.current ? 'font-medium text-gray-900' : 'text-gray-500',
-                                active ? 'bg-gray-100' : '',
-                                'block px-4 py-2 text-sm'
-                              )}
-                            >
-                              {option.name}
-                            </a>
-                          )}
-                        </Menu.Item>
-                      ))}
+                     
                     </div>
                   </Menu.Items>
                 </Transition>
@@ -238,55 +227,44 @@ const Store = () => {
               <form className="hidden lg:block">
                 <h3 className="sr-only">Categories</h3>
                 <ul role="list" className="text-sm font-medium text-gray-900 space-y-4 pb-6 border-b border-gray-200">
-                  {subCategories.map((category) => (
-                    <li key={category.name}>
-                      <a href={category.href}>{category.name}</a>
-                    </li>
-                  ))}
+                { categories &&
+                      categories !== null &&
+                      categories !== undefined &&
+                      categories.map(category => {
+                        if (category.sub_categories.length === 0){
+                          return (
+                            <div key={category.id} className="flex items-center h-5 my-5">
+                              <input type="radio" name='category_id' className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded-full cursor-pointer">
+                              </input>
+                              <label className="ml-3 min-w-0 flex-1 text-gray-500">{category.name}</label>
+                            </div>
+                          )
+                        }else{
+                          let result = []
+                          result.push(
+                            <div key={category.id} className="flex items-center h-5">
+                              <input type="radio" name='category_id' className="focus:ring-blue-500 h-4 w-4 cursor-pointer text-blue-600 border-gray-300 rounded-full">
+                              </input>
+                              <label className="ml-3 min-w-0 flex-1 text-gray-500">{category.name}</label>
+                            </div>
+                          )
+
+                          category.sub_categories.map(sub_category => {
+                            result.push(
+                              <div key={sub_category.id} className="ml-5 flex items-center h-5 ml-2 my-5">
+                                <input type="radio" name='category_id' className="focus:ring-blue-500 h-4 w-4  text-blue-600 border-gray-300 rounded-full">
+                                </input>
+                                <label className="ml-3 min-w-0 flex-1 text-gray-500">{sub_category.name}</label>
+                              </div>
+                            )
+                          })
+                          return result
+                        }
+                      })
+                    }
                 </ul>
 
-                {filters.map((section) => (
-                  <Disclosure as="div" key={section.id} className="border-b border-gray-200 py-6">
-                    {({ open }) => (
-                      <>
-                        <h3 className="-my-3 flow-root">
-                          <Disclosure.Button className="py-3 bg-white w-full flex items-center justify-between text-sm text-gray-400 hover:text-gray-500">
-                            <span className="font-medium text-gray-900">{section.name}</span>
-                            <span className="ml-6 flex items-center">
-                              {open ? (
-                                <MinusSmIcon className="h-5 w-5" aria-hidden="true" />
-                              ) : (
-                                <PlusSmIcon className="h-5 w-5" aria-hidden="true" />
-                              )}
-                            </span>
-                          </Disclosure.Button>
-                        </h3>
-                        <Disclosure.Panel className="pt-6">
-                          <div className="space-y-4">
-                            {section.options.map((option, optionIdx) => (
-                              <div key={option.value} className="flex items-center">
-                                <input
-                                  id={`filter-${section.id}-${optionIdx}`}
-                                  name={`${section.id}[]`}
-                                  defaultValue={option.value}
-                                  type="checkbox"
-                                  defaultChecked={option.checked}
-                                  className="h-4 w-4 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500"
-                                />
-                                <label
-                                  htmlFor={`filter-${section.id}-${optionIdx}`}
-                                  className="ml-3 text-sm text-gray-600"
-                                >
-                                  {option.label}
-                                </label>
-                              </div>
-                            ))}
-                          </div>
-                        </Disclosure.Panel>
-                      </>
-                    )}
-                  </Disclosure>
-                ))}
+               
               </form>
 
               {/* Product grid */}
@@ -304,4 +282,10 @@ const Store = () => {
     )
 }
 
-export default Store;
+const mapStateToProps = state => ({
+  categories: state.Categories.categories
+})
+
+export default connect(mapStateToProps, {
+ get_categories,
+})(Store)

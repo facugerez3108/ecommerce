@@ -5,12 +5,12 @@ export const get_categories = () => async (dispatch) => {
     
     const config = {
         headers: {
-            'Content-Type': 'application/json'
+            'Accept': 'application/json'
         }
     };
     
     try {
-        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/categories/`, config);
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/category/categories`, config);
         if (res.status === 200) {
             dispatch({
                 type: GET_CATEGORIES_SUCCES,
