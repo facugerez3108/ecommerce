@@ -252,7 +252,7 @@ import {get_categories} from '../../redux/actions/categories'
                           category.sub_categories.map(sub_category => {
                             result.push(
                               <div key={sub_category.id} className="ml-5 flex items-center h-5 ml-2 my-5">
-                                <input type="radio" name='category_id' className="focus:ring-blue-500 h-4 w-4  text-blue-600 border-gray-300 rounded-full">
+                                <input type="radio" name='category_id' className="focus:ring-blue-500 h-4 w-4  text-blue-600 border-gray-300 rounded-full cursor-pointer">
                                 </input>
                                 <label className="ml-3 min-w-0 flex-1 text-gray-500">{sub_category.name}</label>
                               </div>
