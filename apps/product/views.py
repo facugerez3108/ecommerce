@@ -7,7 +7,7 @@ from apps.product.models import Product
 from apps.product.serializers import ProductSerializer
 from apps.category.models import Category
 
-import django.db.models import Q
+from django.db.models import Q
 
 
 class ProductDetailView(APIView):
@@ -21,8 +21,11 @@ class ProductDetailView(APIView):
                 {'error': 'Product ID must be a integer'}, status=status.HTTP_400_BAD_REQUEST)
         if Product.objects.filter(id=product_id).exists():
             product = Product.objects.get(id=product_id)
-            serializer = ProductSerializer(product)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            
+            product = ProductSerializer(product)
+            
+            return Response({'product': product.data}, status=status.HTTP_200_OK)
+        
         else:
             return Response(
                 {'error': 'Product does not exist'}, status=status.HTTP_404_NOT_FOUND)
@@ -34,46 +37,43 @@ class ListProductsView(APIView):
     def get(self, request, format=None):
         sortBy = request.query_params.get('sortBy')
 
-        if not (sortBy == 'date_created' or sortBy == 'price' or sortBy == 'name' or sortBy == 'sold'):
-            sortBy = 'date_created'
+        if not (sortBy == 'created_at' or sortBy == 'price' or sortBy == 'name' or sortBy == 'sold'):
+            sortBy = 'created_at'
         
         order = request.query_params.get('order')
         limit = request.query_params.get('limit')
 
         if not limit:
             limit = 6
+        
+        try:
+             limit = int(limit)
+        except:
+            return Response(
+                {'error': 'Limit must be a integer'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        if limit <= 0:
+            limit = 6
+        
+        if order == 'desc':
+            sortBy = '-' + sortBy
+            products = Product.objects.order_by(sortBy).all()[:int(limit)]
+        elif order == 'asc':
+            products = Product.objects.order_by(sortBy).all()[:int(limit)]
         else:
-            try:
-                limit = int(limit)
-            except:
-                return Response(
-                    {'error': 'Limit must be a integer'}, status=status.HTTP_400_BAD_REQUEST)
+            products = Product.objects.order_by(sortBy).all()
             
-            if limit <= 0:
-                limit = 6
-            
-            """ if (order == 'asc' or order == 'desc') and sortBy == 'sold':
-                limit = 100 """
+        products = ProductSerializer(products, many=True)
 
-            if order == 'desc':
-                sortBy = '-' + sortBy
-                products = Product.objects.order_by(sortBy).all()[:int(limit)]
-            elif order == 'asc':
-                products = Product.objects.order_by(sortBy).all()[:int(limit)]
-            else:
-                products = Product.objects.order_by(sortBy).all()
-            
-            products = ProductSerializer(products, many=True)
-
-            if products:
-                return Response({'products': products.data}, status=status.HTTP_200_OK)
-            else:
-                return Response(
-                    {'error': 'No products found'}, status=status.HTTP_404_NOT_FOUND)
-
+        if products:
+            return Response({'products': products.data}, status=status.HTTP_200_OK)
+        else:
+            return Response(
+                {'error': 'No products found'}, status=status.HTTP_404_NOT_FOUND)
+        
 
 class ListSearchView(APIView):
-    permission_classes = (permissions.AllowAny, )
+    permission_classes = (permissions.AllowAny,)
 
     def post(self, request, format=None):
         data = self.request.data
@@ -89,12 +89,11 @@ class ListSearchView(APIView):
         # chequea si hay inputs en la busqueda 
         if len(search) == 0:
             # muestra todos los productos si no hay inputs en la busqueda
-            return Response(
-                search_results = Product.objects.order_by('-date_created').all())
+           search_results = Product.objects.order_by('-created_at').all()
         else:
-            # si hay inputs en la busqueda, muestra los productos que coincidan con la busqueda
-            search_results = Product.objects.filter
-            (Q(description__contains=search) | Q(name__contains=search)).order_by('-date_created').all()
+            # si hay criterios en la busqueda, muestra los productos que coincidan con la busqueda
+            search_results = Product.objects.filter(Q(description__icontains=search) 
+            | Q(name__icontains=search))
         
         if category_id == 0:
             search_results = ProductSerializer(search_results, many=True)
@@ -109,11 +108,11 @@ class ListSearchView(APIView):
 
         # Si la categoria tiene padre, filtrar SOLO por la categoria y no el padre
         if category.parent:
-            search_results = search_results.order_by('-sold').filter(category=category)
+            search_results = search_results.order_by('-created_at').filter(category=category)
         else:
             # Si la categoria no tiene padre ni hijos, filtrar solo por la categoria
             if not Category.objects.filter(parent=category).exists():
-                search_results = search_results.order_by('-date_created').filter(category=category)
+                search_results = search_results.order_by('-created_at').filter(category=category)
             else:
                 categories = Category.objects.filter(parent=category)
                 filtered_categories = [category]
@@ -123,7 +122,7 @@ class ListSearchView(APIView):
                 
                 filtered_categories = tuple(filtered_categories)
 
-                search_results = search_results.order_by('-date_created').filter(category__in=filtered_categories)
+                search_results = search_results.order_by('-created_at').filter(category__in=filtered_categories)
         
         search_results = ProductSerializer(search_results, many=True)
         return Response({'search_results': search_results.data}, status=status.HTTP_200_OK)
@@ -146,14 +145,14 @@ class ListRelatedView(APIView):
         
         category = Product.objects.get(id=product_id).category
 
-        if Product.objects.filter(category=category).exist():
+        if Product.objects.filter(category=category).exists():
             # Si la categoria tiene padre, filtrar SOLO por la categoria y no el padre
             if category.parent:
                 related_products = Product.objects.order_by('-sold').filter(category=category)
             
             else:
                 if not Category.objects.filter(parent=category).exists():
-                    related_products = related_products.order_by('-sold').filter(category=category)
+                    related_products = Product.objects.order_by('-sold').filter(category=category)
 
                 else:
                     categories = Category.objects.filter(parent=category)
@@ -164,7 +163,7 @@ class ListRelatedView(APIView):
                     
                     filtered_categories = tuple(filtered_categories)
 
-                    related_products = related_products.order_by('-sold').filter(category__in=filtered_categories)
+                    related_products = Product.objects.order_by('-sold').filter(category__in=filtered_categories)
 
             # Excluir el producto que estamos viendo
             related_products = related_products.exclude(id=product_id)
@@ -199,8 +198,8 @@ class ListBySearchView(APIView):
         price_range = data['price_range']
         sort_by = data['sort_by']
 
-        if not (sort_by == 'date_created' or sort_by == 'price' or sort_by == 'sold' or sort_by == 'name'):
-            sort_by = 'date_created'
+        if not (sort_by == 'created_at' or sort_by == 'price' or sort_by == 'sold' or sort_by == 'name'):
+            sort_by = 'created_at'
         
         order = data['order']
 
