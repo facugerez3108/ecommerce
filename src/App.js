@@ -10,6 +10,7 @@ import Signup from './containers/auth/Signup';
 import ResetPassword from './containers/auth/ResetPassword';
 import ResetPasswordConfirm from './containers/auth/ResetPasswordConfirm';
 import Store from './containers/pages/Store';
+import ProductDetail from './containers/pages/ProductDetail';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
           <Route path="password/reset/confirm/:uid/:token" element={<ResetPasswordConfirm />} />
           <Route exact path="/" element={<Home />} />
           <Route path="/store" element={<Store />} />
+          <Route path="/product/:id" element={<ProductDetail />} />
         </Routes>
       </Router>
     </Provider>

@@ -3,9 +3,10 @@ import { Fragment, useState, useEffect } from 'react'
 import { Dialog, Disclosure, Menu, Transition } from '@headlessui/react'
 import { XIcon } from '@heroicons/react/outline'
 import { ChevronDownIcon, FilterIcon, MinusSmIcon, PlusSmIcon, ViewGridIcon } from '@heroicons/react/solid'
-
 import {connect} from 'react-redux'
 import {get_categories} from '../../redux/actions/categories'
+import { get_products, get_filter_products } from '../../redux/actions/products'
+import {Link} from 'react-router-dom'
 
   const filters = [
     {
@@ -48,13 +49,20 @@ import {get_categories} from '../../redux/actions/categories'
 
   const Store = ({
   get_categories,
-  categories
+  categories,
+  get_products,
+  products,
+  get_filter_products,
+  filtered_products
   }) => {
     const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
     
     useEffect (() => {
       get_categories()
+      get_products()
     }, [])
+
+    const [open, setOpen] = useState(true)
 
     return (
     <Layout>
@@ -223,49 +231,37 @@ import {get_categories} from '../../redux/actions/categories'
             </h2>
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-x-8 gap-y-10">
+              
+
+
               {/* Filters */}
-              <form className="hidden lg:block">
-                <h3 className="sr-only">Categories</h3>
-                <ul role="list" className="text-sm font-medium text-gray-900 space-y-4 pb-6 border-b border-gray-200">
-                { categories &&
+              <section className='flex gap-6'>
+                <div className={`bg-[#CCCCCC] min-h-screen ${open ? "w-72" : "w-16"} duration-500 text-gray-100 px-4`}>
+                    {
+                      categories &&
                       categories !== null &&
                       categories !== undefined &&
                       categories.map(category => {
-                        if (category.sub_categories.length === 0){
-                          return (
-                            <div key={category.id} className="flex items-center h-5 my-5">
-                              <input type="radio" name='category_id' className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded-full cursor-pointer">
-                              </input>
-                              <label className="ml-3 min-w-0 flex-1 text-gray-500">{category.name}</label>
+                        if(category.sub_categories.length === 0){
+                          return(
+                            <div key={category.id} className="mt-4 flex flex-col gap-4 relative">
+                              <Link to="#" 
+                              className={`whitespace-pre duration-500 group flex text-black items-center text-sm 
+                              gap-1.5 font-medium p-3
+                              ${
+                                !open && "opacity-0 translate-x-28 overflow-hidden"
+                              } 
+                              hover:bg-[#FFE4E7] rounded-md`}>{category.name}</Link>
                             </div>
                           )
-                        }else{
-                          let result = []
-                          result.push(
-                            <div key={category.id} className="flex items-center h-5">
-                              <input type="radio" name='category_id' className="focus:ring-blue-500 h-4 w-4 cursor-pointer text-blue-600 border-gray-300 rounded-full">
-                              </input>
-                              <label className="ml-3 min-w-0 flex-1 text-gray-500">{category.name}</label>
-                            </div>
-                          )
-
-                          category.sub_categories.map(sub_category => {
-                            result.push(
-                              <div key={sub_category.id} className="ml-5 flex items-center h-5 ml-2 my-5">
-                                <input type="radio" name='category_id' className="focus:ring-blue-500 h-4 w-4  text-blue-600 border-gray-300 rounded-full cursor-pointer">
-                                </input>
-                                <label className="ml-3 min-w-0 flex-1 text-gray-500">{sub_category.name}</label>
-                              </div>
-                            )
-                          })
-                          return result
                         }
                       })
                     }
-                </ul>
+                </div>
+              </section>
 
-               
-              </form>
+
+
 
               {/* Product grid */}
               <div className="lg:col-span-3">
@@ -283,9 +279,13 @@ import {get_categories} from '../../redux/actions/categories'
 }
 
 const mapStateToProps = state => ({
-  categories: state.Categories.categories
+  categories: state.Categories.categories,
+  products: state.Products.products,
+  filtered_products: state.Products.filtered_products
 })
 
 export default connect(mapStateToProps, {
  get_categories,
+ get_products,
+ get_filter_products
 })(Store)

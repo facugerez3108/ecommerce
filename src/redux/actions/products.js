@@ -1,17 +1,17 @@
 import axios from 'axios';
-import { GET_PRODUCTS_SUCCES,
+import { GET_PRODUCTS_SUCCESS,
     GET_PRODUCTS_FAIL,
-    GET_PRODUCTS_BY_ARRIVAL_SUCCES,
+    GET_PRODUCTS_BY_ARRIVAL_SUCCESS,
     GET_PRODUCTS_BY_ARRIVAL_FAIL,
-    GET_PRODUCTS_BY_SOLD_SUCCES,
+    GET_PRODUCTS_BY_SOLD_SUCCESS,
     GET_PRODUCTS_BY_SOLD_FAIL,
-    GET_PRODUCT_SUCCES,
+    GET_PRODUCT_SUCCESS,
     GET_PRODUCT_FAIL,
-    SEARCH_PRODUCTS_SUCCES,
+    SEARCH_PRODUCTS_SUCCESS,
     SEARCH_PRODUCTS_FAIL,
-    RELATED_PRODUCTS_SUCCES,
+    RELATED_PRODUCTS_SUCCESS,
     RELATED_PRODUCTS_FAIL,
-    FILTER_PRODUCTS_SUCCES,
+    FILTER_PRODUCTS_SUCCESS,
     FILTER_PRODUCTS_FAIL }
     from './types';
 
@@ -23,11 +23,11 @@ export const get_products = () => async dispatch => {
     }
     try {
 
-        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/products/get-products`, config);
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/product/get-products`, config);
 
         if (res.status === 200) {
             dispatch({
-                type: GET_PRODUCTS_SUCCES,
+                type: GET_PRODUCTS_SUCCESS,
                 payload: res.data
             });
         }else{
@@ -48,14 +48,15 @@ export const get_products_by_arrival = () => async dispatch => {
         headers: {
             'Accept': 'application/json',
         }
-    }
+    };
+    
     try {
 
-        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/products/get-products?sortBy=date_created&order=desc&limit=3`, config);
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/product/get-products?sortBy=date_created&order=desc&limit=3`, config);
 
         if (res.status === 200) {
             dispatch({
-                type: GET_PRODUCTS_BY_ARRIVAL_SUCCES,
+                type: GET_PRODUCTS_BY_ARRIVAL_SUCCESS,
                 payload: res.data
             });
         }else{
@@ -76,14 +77,15 @@ export const get_products_by_sold = () => async dispatch => {
         headers: {
             'Accept': 'application/json',
         }
-    }
+    };
+    
     try {
 
-        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/products/get-products?sortBy=sold&order=desc&limit=3`, config);
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/product/get-products?sortBy=sold&order=desc&limit=3`, config);
 
         if (res.status === 200) {
             dispatch({
-                type: GET_PRODUCTS_BY_SOLD_SUCCES,
+                type: GET_PRODUCTS_BY_SOLD_SUCCESS,
                 payload: res.data
             });
         }else{
@@ -111,7 +113,7 @@ export const get_product = (productId) => async dispatch => {
 
         if (res.status === 200) {
             dispatch({
-                type: GET_PRODUCT_SUCCES,
+                type: GET_PRODUCT_SUCCESS,
                 payload: res.data
             });
         }else{
@@ -139,7 +141,7 @@ export const get_related_products_succes = (productId) => async dispatch => {
 
         if (res.status === 200) {
             dispatch({
-                type: RELATED_PRODUCTS_SUCCES,
+                type: RELATED_PRODUCTS_SUCCESS,
                 payload: res.data
             });
         }else{
@@ -172,7 +174,7 @@ export const get_filter_products = (category_id, price_range, sort_by, order) =>
 
         if (res.status === 200 && !res.data.console.error)  {
             dispatch({
-                type: FILTER_PRODUCTS_SUCCES,
+                type: FILTER_PRODUCTS_SUCCESS,
                 payload: res.data
             });
         }else{
@@ -206,7 +208,7 @@ export const get_search_products = (search, category_id) => async dispatch => {
 
         if (res.status === 200 && !res.data.console.error)  {
             dispatch({
-                type: SEARCH_PRODUCTS_SUCCES,
+                type: SEARCH_PRODUCTS_SUCCESS,
                 payload: res.data
             });
         }else{
