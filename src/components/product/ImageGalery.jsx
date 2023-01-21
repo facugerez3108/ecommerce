@@ -21,7 +21,7 @@ const ImageGallery = ({ image }) => {
                         {({ selected }) => (
                           <>
                             <span className="absolute inset-0 rounded-md overflow-hidden">
-                              <img src={image && image} alt="" className="w-full h-full object-center object-cover" />
+                              <img src={image} alt="" className="w-full h-full object-center object-cover" />
                             </span>
                             <span
                               className={classNames(
@@ -39,7 +39,7 @@ const ImageGallery = ({ image }) => {
                 <Tab.Panels className="w-full aspect-w-1 aspect-h-1">
                     <Tab.Panel>
                       <img
-                        src={image && image}
+                        src={image}
                         alt=""
                         className="w-full h-full object-center object-cover sm:rounded-lg"
                       />

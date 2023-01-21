@@ -1,9 +1,9 @@
 import Layout from '../../hocs/Layout'
 import { Fragment, useState, useEffect } from 'react'
-import { Dialog, Disclosure, Menu, Transition } from '@headlessui/react'
+import { Dialog, Disclosure, Transition } from '@headlessui/react'
 import { XIcon } from '@heroicons/react/outline'
-import { ChevronDownIcon, FilterIcon, MinusSmIcon, PlusSmIcon, ViewGridIcon } from '@heroicons/react/solid'
-import {connect, shallowEqual} from 'react-redux'
+import { FilterIcon, MinusSmIcon, PlusSmIcon} from '@heroicons/react/solid'
+import {connect} from 'react-redux'
 import {get_categories} from '../../redux/actions/categories'
 import { get_products, get_filter_products } from '../../redux/actions/products'
 import {Link} from 'react-router-dom'
@@ -12,27 +12,30 @@ import {
 } from 'react-icons/bs';
 import ProductCard from '../../components/product/ProductCard'
 import { prices } from '../../helpers/fixedPrices'
+import Footer from '../../components/navigation/Footer'
+import Navbar from '../../components/navigation/Navbar'
 
+const SearchPage = ({
+    get_categories,
+    categories,
+    get_products,
+    get_filter_products,
+    filtered_products,
+    products,
+    searched_products
+}) => {
 
-  const Store = ({
-  get_categories,
-  categories,
-  get_products,
-  products,
-  get_filter_products,
-  filtered_products
-  }) => {
-    
     const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
     const [filtered, setFiltered] = useState(false)
     const [formData, setFormData] = useState({
       category_id: '0',
       price_range: 'sort_by',
       sortBy: 'created',
-      order: 'desc'
+      order: 'desc',
+      search: ''
     })
 
-    const {category_id, price_range, sortBy, order} = formData
+    const {category_id, price_range, sortBy, order, search} = formData
 
 
     useEffect (() => {
@@ -42,7 +45,6 @@ import { prices } from '../../helpers/fixedPrices'
     }, [])
 
     useEffect (() => {
-      console.log(filtered_products)
     }, [filtered_products])
 
   
@@ -53,9 +55,10 @@ import { prices } from '../../helpers/fixedPrices'
       get_filter_products(category_id, price_range, sortBy, order)
       setFiltered(true)
     }
-    
 
-    const showProducts = () => {
+   
+    // Funcion para mostrar la busqueda de productos y el filtrado de productos
+    const showSearchedProducts = () => {
       let result = []
       let display = []
 
@@ -70,19 +73,16 @@ import { prices } from '../../helpers/fixedPrices'
               </div>
             );
           });
-        }else if(
-          !filtered &&
-          products &&
-          products !== null &&
-          products !== undefined
-        ){
-          products.map((product, index) => {
+        }else if (searched_products && 
+        searched_products !== null &&
+        searched_products !== undefined){
+          searched_products.map((product, index) => {
             return display.push(
               <div key={index}>
                 <ProductCard product={product}  />
               </div>
-            )
-          })
+            );
+          });
         }
 
         for (let i = 0; i < display.length; i += 3){
@@ -98,46 +98,47 @@ import { prices } from '../../helpers/fixedPrices'
 
     }
 
-    return (
-    <Layout>
-    <div className="bg-white">
-      <div>
-        {/* Mobile filter dialog */}
-        <Transition.Root show={mobileFiltersOpen} as={Fragment}>
-          <Dialog as="div" className="fixed inset-0 flex z-40 lg:hidden" onClose={setMobileFiltersOpen}>
-            <Transition.Child
-              as={Fragment}
-              enter="transition-opacity ease-linear duration-300"
-              enterFrom="opacity-0"
-              enterTo="opacity-100"
-              leave="transition-opacity ease-linear duration-300"
-              leaveFrom="opacity-100"
-              leaveTo="opacity-0"
-            >
-              <Dialog.Overlay className="fixed inset-0 bg-black bg-opacity-25" />
-            </Transition.Child>
+    return(
+        <div>
+            <Navbar />
+            <div className="bg-white">
+                <div>
+                    {/* Mobile filter dialog */}
+                    <Transition.Root show={mobileFiltersOpen} as={Fragment}>
+                      <Dialog as="div" className="fixed inset-0 flex z-40 lg:hidden" onClose={setMobileFiltersOpen}>
+                        <Transition.Child
+                          as={Fragment}
+                          enter="transition-opacity ease-linear duration-300"
+                          enterFrom="opacity-0"
+                          enterTo="opacity-100"
+                          leave="transition-opacity ease-linear duration-300"
+                          leaveFrom="opacity-100"
+                          leaveTo="opacity-0"
+                        >
+                          <Dialog.Overlay className="fixed inset-0 bg-black bg-opacity-25" />
+                        </Transition.Child>
 
-            <Transition.Child
-              as={Fragment}
-              enter="transition ease-in-out duration-300 transform"
-              enterFrom="translate-x-full"
-              enterTo="translate-x-0"
-              leave="transition ease-in-out duration-300 transform"
-              leaveFrom="translate-x-0"
-              leaveTo="translate-x-full"
-            >
-              <div className="ml-auto relative max-w-xs w-full h-full bg-white shadow-xl py-4 pb-12 flex flex-col overflow-y-auto">
-                <div className="px-4 flex items-center justify-between">
-                  <h2 className="text-lg font-medium text-gray-900">Filters</h2>
-                  <button
-                    type="button"
-                    className="-mr-2 w-10 h-10 bg-white p-2 rounded-md flex items-center justify-center text-gray-400"
-                    onClick={() => setMobileFiltersOpen(false)}
-                  >
-                    <span className="sr-only">Close menu</span>
-                    <XIcon className="h-6 w-6" aria-hidden="true" />
-                  </button>
-                </div>
+                        <Transition.Child
+                            as={Fragment}
+                            enter="transition ease-in-out duration-300 transform"
+                            enterFrom="translate-x-full"
+                            enterTo="translate-x-0"
+                            leave="transition ease-in-out duration-300 transform"
+                            leaveFrom="translate-x-0"
+                            leaveTo="translate-x-full"
+                        >
+                        <div className="ml-auto relative max-w-xs w-full h-full bg-white shadow-xl py-4 pb-12 flex flex-col overflow-y-auto">
+                        <div className="px-4 flex items-center justify-between">
+                          <h2 className="text-lg font-medium text-gray-900">Filters</h2>
+                          <button
+                            type="button"
+                            className="-mr-2 w-10 h-10 bg-white p-2 rounded-md flex items-center justify-center text-gray-400"
+                            onClick={() => setMobileFiltersOpen(false)}
+                          >
+                            <span className="sr-only">Close menu</span>
+                            <XIcon className="h-6 w-6" aria-hidden="true" />
+                          </button>
+                        </div>
 
                 {/* Mobile Filters */}
                 <form onSubmit={e => onSubmit(e)} className="mt-4 border-t border-gray-200">
@@ -318,7 +319,9 @@ import { prices } from '../../helpers/fixedPrices'
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="relative z-10 flex items-baseline justify-between pt-24 pb-6 border-b border-gray-200">
-            <h1 className="text-4xl font-extrabold tracking-tight text-gray-900">Tienda</h1>
+            <h1 className="text-4xl font-extrabold tracking-tight text-gray-900">Productos ({searched_products && 
+        searched_products !== null &&
+        searched_products !== undefined && searched_products.length})</h1>
             <div className="flex items-center">
               <button
                 type="button"
@@ -528,7 +531,7 @@ import { prices } from '../../helpers/fixedPrices'
                 
                 <div className="border-4 border-dashed border-gray-200 rounded-lg h-96 lg:h-full">
                   
-                  {products && showProducts()}
+                  {products && showSearchedProducts()}
                 
                 </div>
    
@@ -537,19 +540,23 @@ import { prices } from '../../helpers/fixedPrices'
           </section>
         </main>
       </div>
-    </div>            
-    </Layout>
-    )
+    </div>
+    <Footer />            
+    </div>
+    
+)
+
 }
 
 const mapStateToProps = state => ({
-  categories: state.Categories.categories,
-  products: state.Products.products,
-  filtered_products: state.Products.filtered_products
-})
+    categories: state.Categories.categories,
+    products: state.Products.products,
+    filtered_products: state.Products.filtered_products,
+    searched_products: state.Products.search_products
+  })
 
 export default connect(mapStateToProps, {
- get_categories,
- get_products,
- get_filter_products
-})(Store)
+    get_categories,
+    get_filter_products,
+    get_products,
+})(SearchPage)

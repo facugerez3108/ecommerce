@@ -13,7 +13,7 @@ const ProductCard = ({product}) => {
                   />
                 </div>
                 <h3 className="mt-4 text-base font-semibold text-gray-900">
-                  <Link to={`product/${product.id}`}>
+                  <Link to={`/product/${product.id}`}>
                     <span className="absolute inset-0" />
                     {product.name}
                   </Link>

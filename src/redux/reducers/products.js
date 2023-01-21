@@ -29,7 +29,8 @@ export default function Products(state = initialState, action) {
 
     switch (type) {
         case GET_PRODUCTS_SUCCESS:
-            return {
+        console.log('testx', payload.products)    
+        return {
                 ...state,
                 products: payload.products
             }

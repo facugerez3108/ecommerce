@@ -3,6 +3,8 @@ import os
 from telnetlib import AUTHENTICATION
 import environ
 from datetime import timedelta
+from corsheaders.defaults import default_headers
+
 
 env = environ.Env()
 environ.Env.read_env()
@@ -88,6 +90,8 @@ TEMPLATES = [
     },
 ]
 
+CORS_ALLOW_HEADERS = ('content-disposition', 'accept-encoding',
+                      'content-type', 'accept', 'origin', 'authorization')
 
 WSGI_APPLICATION = 'core.wsgi.application'
 

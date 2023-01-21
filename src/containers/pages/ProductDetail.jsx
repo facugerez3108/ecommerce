@@ -2,52 +2,45 @@ import React from 'react'
 import Layout from '../../hocs/Layout'
 import { useParams } from 'react-router-dom'
 import { connect } from 'react-redux'
-import { get_product, get_related_products_succes } from '../../redux/actions/products'
-import { useEffect, useState } from 'react'
-import { Disclosure, RadioGroup, Tab } from '@headlessui/react'
-import { StarIcon } from '@heroicons/react/solid'
-import { HeartIcon, MinusSmIcon, PlusSmIcon } from '@heroicons/react/outline'
+import { get_product } from '../../redux/actions/products'
+import { useEffect } from 'react'
+import { HeartIcon } from '@heroicons/react/outline'
 import ImageGallery from '../../components/product/ImageGalery'
+
 
 const ProductDetail = ({
     get_product, 
-    get_related_products_succes,
     product
 }) => {
 
 
     const params = useParams();
     const id = params.id;
-    
-    
-      function classNames(...classes) {
-        return classes.filter(Boolean).join(' ')
-      }
 
-
+    
     useEffect(() => {
-        get_product(id);
-        get_related_products_succes(id);
-    })
+      window.scrollTo(0,0)
+      get_product(id)
+    }, [])
 
-    
+
     return (
         <Layout>
            <div className="bg-white">
-      <div className="max-w-2xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:max-w-7xl lg:px-8">
-        <div className="lg:grid lg:grid-cols-2 lg:gap-x-8 lg:items-start">
-          {/* Product Media */}
-            <ImageGallery image={product && product.image} />
-          {/* Product info */}
-          <div className="mt-10 px-4 sm:px-0 sm:mt-16 lg:mt-0">
-            <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">{product && product.name}</h1>
+            <div className="max-w-2xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:max-w-7xl lg:px-8">
+              <div className="lg:grid lg:grid-cols-2 lg:gap-x-8 lg:items-start">
+                {/* Product Media */}
+                  <ImageGallery image={product && product.image} />
+                {/* Product info */}
+                <div className="mt-10 px-4 sm:px-0 sm:mt-16 lg:mt-0">
+                <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">{product && product.name}</h1>
 
-            <div className="mt-3">
-              <h2 className="sr-only">Product information</h2>
-              <p className="text-3xl text-gray-900">${product && product.price}</p>
-            </div>
+                  <div className="mt-3">
+                    <h2 className="sr-only">Product information</h2>
+                    <p className="text-3xl text-gray-900">${product && product.price}</p>
+                  </div>
            
-            {/* Description */}
+                  {/* Description */}
 
             <div className="mt-6">
               <h3 className="text-xl">Descripción</h3>
@@ -138,5 +131,4 @@ const mapStateToProps = state => ({
 
 export default connect(mapStateToProps, {
     get_product, 
-    get_related_products_succes
 }) (ProductDetail)

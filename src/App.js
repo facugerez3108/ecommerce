@@ -11,6 +11,7 @@ import ResetPassword from './containers/auth/ResetPassword';
 import ResetPasswordConfirm from './containers/auth/ResetPasswordConfirm';
 import Store from './containers/pages/Store';
 import ProductDetail from './containers/pages/ProductDetail';
+import SearchPage from './containers/pages/SearchPage';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
           <Route exact path="/" element={<Home />} />
           <Route path="/store" element={<Store />} />
           <Route path="/product/:id" element={<ProductDetail />} />
+          <Route path="/search" element={<SearchPage />} />
         </Routes>
       </Router>
     </Provider>
