@@ -6,6 +6,10 @@ from .models import Cart, CartItem
 from apps.product.models import Product
 from apps.product.serializers import ProductSerializer
 
+import logging
+logger = logging.getLogger(__name__)
+
+
 class GetItemsView(APIView):
     def get(self, request, format=None):
         user = self.request.user
@@ -42,63 +46,65 @@ class AddItemView(APIView):
             product_id = int(data['product_id'])
         except:
             return Response(
-                {'error':'Product ID must be a integer'},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        
+                {'error': 'Product ID must be an integer'},
+                status=status.HTTP_404_NOT_FOUND)
+
         count = 1
 
         try:
-
             if not Product.objects.filter(id=product_id).exists():
                 return Response(
-                {'error' : 'This product does not exist'},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        
+                    {'error': 'This product does not exist'},
+                    status=status.HTTP_404_NOT_FOUND)
+            
             product = Product.objects.get(id=product_id)
+            
             cart = Cart.objects.get(user=user)
 
-            if CartItem.objects.filter(cart=cart, product=product).exist():
+            if CartItem.objects.filter(cart=cart, product=product).exists():
                 return Response(
-                {'error' : 'El item ya se encuentra en el carro'},
-                status=status.HTTP_409_CONFLICT
-            )
-        
+                    {'error': 'Item is already in cart'},
+                    status=status.HTTP_409_CONFLICT)
+
             if int(product.quantity) > 0:
                 CartItem.objects.create(
-                product=product, cart=cart, count=count
-            )
-
-            if CartItem.objects.filter(cart=cart, product=product).exists():
-                total_items = int(cart.total_items) + 1
-                Cart.objects.filter(user=user).update(
-                    total_items = total_items
+                    product=product, cart=cart, count=count
                 )
 
-                cart_items = CartItem.objects.order_by('product').filter(cart=cart)
-
-                result = []
-
-                for cart_item in cart_items:
-                    item = {}
-                    item['id'] = cart_item.id
-                    item['count'] = cart_item.count
-                    product = Product.objects.get(id=cart_item.product.id)
-                    product = ProductSerializer(product)
+                if CartItem.objects.filter(cart=cart, product=product).exists():
+                    total_items = int(cart.total_items) + 1
+                    Cart.objects.filter(user=user).update(
+                        total_items=total_items
+                    )
                 
-                    item['product'] = product.data
+                    cart_items = CartItem.objects.order_by(
+                    'product').filter(cart=cart)
 
-                    result.append(item)
+                    result = []
 
-                return Response({'cart' : result}, status=status.HTTP_201_CREATED)
-            else:
-                return Response({'error' : 'Not enough of this item in stock'},
-                status=status.HTTP_200_OK)
-            
+                    for cart_item in cart_items:
+
+                        item = {}
+                        item['id'] = cart_item.id
+                        item['count'] = cart_item.count
+                        product = Product.objects.get(id=cart_item.product.id)
+                        product = ProductSerializer(product)
+
+                        item['product'] = product.data
+
+                        result.append(item)
+
+                        print(result)
+
+                    return Response({'cart': result}, status=status.HTTP_201_CREATED)
+                else:
+                    return Response(
+                        {'error': 'Not enough of this item in stock'},
+                        status=status.HTTP_200_OK)
         except:
-            return Response({'error': 'Something went wrong when adding item to cart'},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {'error': 'Something went wrong when adding item to cart'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class GetTotalView(APIView):
@@ -209,3 +215,148 @@ class UpdateItemView(APIView):
         except:
             return Response({'error' : 'Something went wrong when updating item cart'},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
+
+
+class RemoveItemView(APIView):
+    def remove(self, request, format:None):
+        user=self.request.user
+        data=self.request.data
+
+        try:
+            product_id = int(data['product_id'])
+        except:
+            return Response({'error' : 'Product ID must be a integer'}, 
+            status=status.HTTP_404_NOT_FOUND)
+
+
+        try:
+            if not Product.objects.filter(id=product_id).exist():
+                return Response({'error' : 'This product does not exist'}, 
+                status=status.HTTP_404_NOT_FOUND)
+
+            product = Product.objects.get(id=product_id)
+            cart = Cart.objects.get(user=user)
+
+            if not CartItem.objects.fiter(cart=cart, product=product).exist():
+                return Response(
+                    {'error' : 'This product is not in your cart'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            CartItem.objects.filter(cart=cart, product=product).delete()
+
+            if not CartItem.objects.filter(cart=cart, product=product).exist():
+                total_items = int(cart.total_items) - 1
+                Cart.objects.filter(user=user).update(total_items=total_items)
+
+            cart_items = CartItem.objects.order_by('product').filter(cart=cart)
+
+            result = []
+
+            if CartItem.objects.filter(cart=cart).exist():
+                for cart_item in cart_items:
+                    item = {}
+
+                    item['id'] = cart_item.id
+                    item['count'] = cart_item.count
+                    product = Product.objects.get(id=cart_item.product.id)
+                    product = ProductSerializer(product)
+
+                    item['product'] = product.data
+
+                    result.append(item)           
+
+            return Response({'cart' : result}, status=status.HTTP_200_OK)
+        except:
+            return Response({'error' : 'Something went wrong when removing item'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class EmptyCartView(APIView):
+    def delete(self, request, format=None):
+        user = self.request.data
+
+        try:
+            cart = Cart.objects.get(user=user)
+
+            if not CartItem.objects.filter(cart=cart).exist():
+                return Response({'success' : 'Cart is alredy empty'}, 
+                status=status.HTTP_200_OK)
+
+            CartItem.objects.filter(cart=cart).delete()
+            
+            #Actualiza el carro
+            Cart.objects.filter(user=user).update(total_items=0)
+
+            return Response(
+                {'success' : 'Cart emptied successfully'},
+                status=status.HTTP_200_OK
+            )
+
+        except:
+            return Response({'error' : 'Something went wrong emptying cart'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class SynchCartView(APIView):
+    def put(self, request, format=None):
+        user = self.request.user
+        data = self.request.data
+
+        try:
+            cart_items = data['cart_items']
+
+            for cart_item in cart_items:
+                cart = Cart.objects.get(user=user)
+
+                try: 
+                    product_id = int(cart_item['product_id'])
+                except:
+                    return Response({'error' : 'Product ID must be a integer'},
+                    status=status.HTTP_404_NOT_FOUND)
+
+                if not Product.objects.filter(id=product_id).exist():
+                    return Response({'error' : 'Product whit this ID does not exist'},
+                    status=status.HTTP_404_NOT_FOUND)
+
+                product = Product.objects.get(id=product_id)
+                quantity = product.quantity
+
+                if CartItem.objects.filter(cart=cart, product=product).exist():
+                    #Actualiza el item del carro
+                    item = CartItem.objects.get(cart=cart, product=product)
+                    count = item.count
+
+                    try:
+                        cart_item_count = int(cart_item['count'])
+                    except:
+                        cart_item_count = 1 
+
+                    #Check DB
+
+                    if (cart_item_count + int(count)) <= int(quantity):
+                        update_count = cart_item_count + int(count)
+                        CartItem.objects.filter(cart=cart, 
+                        product=product).update(count=update_count)
+                    else:
+                        #Agrega item al carro del usuario (sin necesidad de estar registrado)
+                        try:
+                            cart_item_count = int(cart_item['count'])
+                        except:
+                            cart_item_count = 1
+
+                        if cart_item_count <= quantity:
+                            CartItem.objects.create(product=product, 
+                            cart=cart, count=cart_item_count)
+
+                            if CartItem.objects.filter(cart=cart, product=product).exist():
+                                #sumar item
+                                total_items = int(cart.total_items) + 1
+                                Cart.objects.fitler(user=user).update(total_items=total_items)
+                    
+                    return Response(
+                        {'succes' : 'Cart syncrhronized'}, status=status.HTTP_201_CREATED)
+        
+        except:
+            return Response({'error' : 'Something went wrong when synching cart'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR)

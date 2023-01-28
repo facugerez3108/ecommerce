@@ -95,6 +95,7 @@ CORS_ALLOW_HEADERS = ('content-disposition', 'accept-encoding',
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
+WHITENOISE_AUTOREFRESH = True
 
 DATABASES = {
     'default': env.db("DATABASE_URL", default="postgres:///djangoEcommerce"),

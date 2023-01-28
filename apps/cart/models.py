@@ -2,9 +2,8 @@ from django.shortcuts import render
 from django.db import models
 
 from apps.product.models import Product
-from django.contrib.auth import get_user_model
-User = get_user_model()
-
+from django.conf import settings
+User = settings.AUTH_USER_MODEL
 
 class Cart(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -13,5 +12,5 @@ class Cart(models.Model):
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    count = models.IntegerField
+    count = models.IntegerField()
 
