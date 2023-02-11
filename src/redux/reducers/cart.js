@@ -23,7 +23,7 @@ import {
     SYNCH_CART_SUCCESS ,
     SYNCH_CART_FAIL ,
     ADD_ITEM_FAIL 
-} from '..actions/types'
+} from '../actions/types'
 
 const initialState = {
     items: null,

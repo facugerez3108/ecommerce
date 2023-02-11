@@ -30,7 +30,7 @@ const ProductsArrival = ({
                     </Link>
                   </h3>
                 </div>
-                <p className="text-sm font-medium text-gray-900">{product.price}</p>
+                <p className="text-sm font-medium text-gray-900">${product.price}</p>
               </div>
             </div>
           ))}

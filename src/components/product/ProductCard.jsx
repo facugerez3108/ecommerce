@@ -18,7 +18,7 @@ const ProductCard = ({product}) => {
                     {product.name}
                   </Link>
                 </h3>
-                <p className="mt-1 text-sm text-gray-500">{product.price}</p>
+                <p className="mt-1 text-sm text-gray-500">${product && product.price}</p>
             </div>
         </>
     )

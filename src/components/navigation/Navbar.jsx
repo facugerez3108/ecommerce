@@ -10,6 +10,7 @@ import {
   CheckCircleIcon,
   MenuIcon,
   XIcon,
+  ShoppingCartIcon
 } from '@heroicons/react/outline'
 import {connect} from 'react-redux'
 import {logout} from '../../redux/actions/auth'
@@ -231,6 +232,9 @@ function Navbar({
               <span className="sr-only">Open menu</span>
               <MenuIcon className="h-6 w-6" aria-hidden="true" />
             </Popover.Button>
+            <Link to='/cart' className="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+            <ShoppingCartIcon className='h-9 w-9 cursor-pointer text-gray-300 rounded-full mr-4'/>
+            </Link>
           </div>
           <div className="hidden md:flex-1 md:flex md:items-center md:justify-between">
             <Popover.Group as="nav" className="flex space-x-10">
@@ -323,6 +327,9 @@ function Navbar({
                 />}
             </Popover.Group>
             <div className="flex items-center md:ml-12">
+              <Link to='/cart'>
+                <ShoppingCartIcon className='h-9 w-9 cursor-pointer text-gray-300 rounded-full mr-4'/>
+              </Link>
               {
                 isAuthenticated ? authLinks: guestLinks
               }

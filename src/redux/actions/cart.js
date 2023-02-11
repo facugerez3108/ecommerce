@@ -29,9 +29,11 @@ ADD_ITEM_FAIL
  export const add_item = product => async dispatch => { 
    if (localStorage.getItem('access')){
     const config = {
-        'Accept' : 'application/json',
-        'Content-Type' : 'application/json',
-        'Authorization' : `JWT ${localStorage.getItem('access')}`
+        headers: {
+            'Accept' : 'application/json',
+            'Content-Type' : 'application/json',
+            'Authorization' : `JWT ${localStorage.getItem('access')}`
+        }
     };
 
     const product_id = product.id;
@@ -41,7 +43,7 @@ ADD_ITEM_FAIL
 
         const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/cart/add-item`, body, config);
 
-        if (res.status === 200){
+        if (res.status === 201){
             dispatch({ 
                 type: ADD_ITEM_SUCCESS,
                 payload: res.data
@@ -276,7 +278,7 @@ export const update_item = (item, count) => async dispatch => {
         if(localStorage.getItem('cart')){
             cart = JSON.parse(localStorage.getItem('cart'));
 
-            cart.map(cart_item, index => { 
+            cart.map((cart_item, index) => { 
                 if (cart_item.product.id.toString() === item.product.id.toString()){
                     cart[index].count = parseInt(count);
                 }

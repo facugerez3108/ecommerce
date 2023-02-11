@@ -1,18 +1,39 @@
-import React from 'react'
 import Layout from '../../hocs/Layout'
 import { useParams } from 'react-router-dom'
 import { connect } from 'react-redux'
 import { get_product } from '../../redux/actions/products'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { HeartIcon } from '@heroicons/react/outline'
 import ImageGallery from '../../components/product/ImageGalery'
-
+import { Oval } from 'react-loader-spinner'
+import { Link, useNavigate } from 'react-router-dom'
+import {get_items, add_item, get_total, get_item_total} from '../../redux/actions/cart'
 
 const ProductDetail = ({
     get_product, 
-    product
+    product,
+    get_items, 
+    add_item, 
+    get_total, 
+    get_item_total
 }) => {
 
+
+    const addToCart = async () => {
+      if (product && product !== null && product !== undefined && product.quantity > 0){
+        setLoading(true)
+        await add_item(product);
+        await get_items();
+        await get_total();
+        await get_item_total();
+        setLoading(false)
+        navigate('/cart')
+      }
+    }
+
+    const [loading, setLoading] = useState(false);
+
+    const navigate = useNavigate()
 
     const params = useParams();
     const id = params.id;
@@ -60,11 +81,10 @@ const ProductDetail = ({
 
                 
            {/* Colors */}
-            <form className="mt-6">
+            <div className="mt-6">
 
               <div>
                 <h3 className="text-sm text-gray-600">Color</h3>
-
                 <fieldset className="mt-2">
                   <legend className="sr-only">
                     Choose a color
@@ -98,24 +118,51 @@ const ProductDetail = ({
                   </div>
                 </fieldset>
               </div>
-
+              <p className="mt-4">
+                  {
+                    product && product !== null && product !== undefined && product.quantity > 0 ? (
+                      <span className='text-green-500'>
+                        En stock
+                      </span>):
+                      (<span className='text-red-500'>
+                        Sin stock
+                      </span>)
+                  }
+                </p>
               <div className="mt-10 flex sm:flex-col1">
-                <button
-                  type="submit"
-                  className="max-w-xs flex-1 bg-indigo-600 border border-transparent rounded-md py-3 px-8 flex items-center justify-center text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-indigo-500 sm:w-full"
-                >
-                  Add to bag
-                </button>
+                      
+                 {
+                  loading ?  
+                  <button
+                    type="submit"
+                    className="max-w-xs flex-1 bg-indigo-600 border border-transparent rounded-md py-3 px-8 flex items-center justify-center text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-indigo-500 sm:w-full"
+                  >
+                    <Oval
+                      color="#fff"
+                      widht={20}
+                      height={20}
+                    />
+                  </button>:
+                  <button
+                     type="submit"
+                     onClick={addToCart}
+                     className="max-w-xs flex-1 bg-indigo-600 border border-transparent rounded-md py-3 px-8 flex items-center justify-center text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-indigo-500 sm:w-full"
+                  >
+                    Agregar al carro
+                  </button>
+                 }
+                
 
                 <button
-                  type="button"
+                  type="button"                  
                   className="ml-4 py-3 px-3 rounded-md flex items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-gray-500"
                 >
                   <HeartIcon className="h-6 w-6 flex-shrink-0" aria-hidden="true" />
-                  <span className="sr-only">Add to favorites</span>
+                  <span className="sr-only">Agregar a favoritos</span>
                 </button>
+                           
               </div>
-            </form>
+            </div>
 
           </div>
         </div>
@@ -130,5 +177,9 @@ const mapStateToProps = state => ({
 })
 
 export default connect(mapStateToProps, {
-    get_product, 
+    get_product,
+    get_items, 
+    add_item, 
+    get_total, 
+    get_item_total
 }) (ProductDetail)

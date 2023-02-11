@@ -2,6 +2,7 @@ import {Provider} from 'react-redux';
 import store from './store';
 import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
 
+import Cart from './containers/pages/Cart'
 import Home from './containers/Home';
 import Error404 from './containers/errors/Error404';
 import Activate from './containers/auth/Activate';
@@ -22,6 +23,7 @@ function App() {
           <Route path="*" element={<Error404 />} />
           <Route path="/activate/:uid/:token" element={<Activate />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/cart" element={<Cart />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/reset_password" element={<ResetPassword />} />
           <Route path="password/reset/confirm/:uid/:token" element={<ResetPasswordConfirm />} />
